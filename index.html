@@ -126,6 +126,17 @@
   .user-chip .info{ flex:1; }
   .user-chip .uname{ font-size:14px; font-weight:500; }
   .user-chip .urole{ font-size:12px; color:var(--text-muted); }
+  .user-chip.selected{ border-color:var(--gold); background:rgba(227,168,87,0.06); }
+  .password-area{ margin-top:12px; display:none; }
+  .password-area.show{ display:block; }
+  .login-error{ font-size:12.5px; color:var(--danger); margin-top:8px; display:none; }
+  .login-error.show{ display:block; }
+  input[type=password]{
+    width:100%; background:var(--surface-2); border:1px solid var(--border);
+    color:var(--text); padding:12px 14px; border-radius:9px; font-size:15px;
+    font-family:'Tajawal'; outline:none;
+  }
+  input[type=password]:focus{ border-color:var(--gold-dim); }
 
   /* ---------- APP SHELL ---------- */
   #appScreen{ display:none; min-height:100vh; flex-direction:column; }
@@ -362,6 +373,10 @@
       <input type="text" id="loginName" placeholder="اكتب اسمك هنا">
     </div>
     <div class="field">
+      <label class="field-label">كلمة السر</label>
+      <input type="password" id="loginPassword" placeholder="اختار كلمة سر">
+    </div>
+    <div class="field">
       <label class="field-label">دورك</label>
       <div class="role-toggle">
         <div class="role-btn active" data-role="employee" onclick="selectRole(this)">موظف</div>
@@ -369,10 +384,19 @@
       </div>
     </div>
     <button class="btn-primary" onclick="loginNewUser()">دخول</button>
+    <div class="login-error" id="newUserError">الاسم ده مستخدم بالفعل، لو ده حسابك اختاره من القايمة تحت وادخل كلمة السر.</div>
 
     <div class="existing-users" id="existingUsersWrap" style="display:none;">
       <label class="field-label">أو اختار حسابك</label>
       <div id="existingUsersList"></div>
+      <div class="password-area" id="existingPasswordArea">
+        <div class="field">
+          <label class="field-label">كلمة السر</label>
+          <input type="password" id="existingPassword" placeholder="اكتب كلمة السر" onkeydown="if(event.key==='Enter')attemptExistingLogin()">
+        </div>
+        <button class="btn-primary" onclick="attemptExistingLogin()">دخول</button>
+        <div class="login-error" id="existingError">كلمة السر غلط.</div>
+      </div>
     </div>
   </div>
 </div>
@@ -674,6 +698,8 @@ async function init(){
   await renderExistingUsers();
 }
 
+let selectedExistingUserId = null;
+
 async function renderExistingUsers(){
   const employees = await loadEmployees();
   const wrap = document.getElementById('existingUsersWrap');
@@ -681,7 +707,7 @@ async function renderExistingUsers(){
   if(employees.length===0){ wrap.style.display='none'; return; }
   wrap.style.display='block';
   list.innerHTML = employees.map(e=>`
-    <div class="user-chip" onclick='loginExisting(${JSON.stringify(e.id)})'>
+    <div class="user-chip" data-uid="${e.id}" onclick='selectExistingUser(${JSON.stringify(e.id)})'>
       <div class="avatar">${initials(e.name)}</div>
       <div class="info">
         <div class="uname">${escapeHtml(e.name)}</div>
@@ -691,20 +717,46 @@ async function renderExistingUsers(){
   `).join('');
 }
 
-async function loginExisting(id){
+function selectExistingUser(id){
+  selectedExistingUserId = id;
+  document.querySelectorAll('.user-chip').forEach(c=>c.classList.toggle('selected', c.dataset.uid===id));
+  document.getElementById('existingPasswordArea').classList.add('show');
+  document.getElementById('existingError').classList.remove('show');
+  document.getElementById('existingPassword').value = '';
+  document.getElementById('existingPassword').focus();
+}
+
+async function attemptExistingLogin(){
   const employees = await loadEmployees();
-  const u = employees.find(e=>e.id===id);
-  if(u) enterApp(u);
+  const u = employees.find(e=>e.id===selectedExistingUserId);
+  const pass = document.getElementById('existingPassword').value;
+  const err = document.getElementById('existingError');
+  if(!u){ return; }
+  if(u.password !== pass){
+    err.classList.add('show');
+    return;
+  }
+  err.classList.remove('show');
+  enterApp(u);
 }
 
 async function loginNewUser(){
   const nameInput = document.getElementById('loginName');
+  const passInput = document.getElementById('loginPassword');
   const name = nameInput.value.trim();
+  const password = passInput.value;
+  const errBox = document.getElementById('newUserError');
+  errBox.classList.remove('show');
   if(!name){ nameInput.focus(); return; }
+  if(!password){ passInput.focus(); return; }
   const employees = await loadEmployees();
   let existing = employees.find(e=>e.name===name);
-  if(existing){ enterApp(existing); return; }
-  const newUser = { id: 'u_'+Date.now(), name, role: selectedRole };
+  if(existing){
+    errBox.classList.add('show');
+    selectExistingUser(existing.id);
+    return;
+  }
+  const newUser = { id: 'u_'+Date.now(), name, password, role: selectedRole };
   await upsertEmployee(newUser);
   enterApp(newUser);
 }
