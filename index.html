@@ -1,0 +1,743 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>عمل | Workspace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#12181C;
+    --surface:#1B2227;
+    --surface-2:#232B31;
+    --surface-3:#2A3238;
+    --border:#2E3740;
+    --gold:#E3A857;
+    --gold-dim:#B4863F;
+    --text:#EDEAE2;
+    --text-muted:#8D959B;
+    --text-faint:#5E666C;
+    --success:#5FB489;
+    --success-bg:#1E2E27;
+    --warn:#E3A857;
+    --danger:#E2705F;
+    --danger-bg:#2E1E1B;
+    --radius:10px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Tajawal', sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    direction:rtl;
+  }
+  h1,h2,h3,.brand{ font-family:'Cairo', sans-serif; }
+  ::selection{ background:var(--gold); color:#12181C; }
+  ::-webkit-scrollbar{ width:8px; height:8px; }
+  ::-webkit-scrollbar-thumb{ background:var(--surface-3); border-radius:8px; }
+
+  /* ---------- LOGIN ---------- */
+  #loginScreen{
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    padding:24px;
+    background:
+      radial-gradient(circle at 30% 20%, rgba(227,168,87,0.08), transparent 40%),
+      var(--bg);
+  }
+  .login-card{
+    width:100%; max-width:420px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:36px 32px;
+  }
+  .login-logo{
+    display:flex; align-items:center; gap:10px; margin-bottom:6px;
+  }
+  .login-logo .mark{
+    width:38px; height:38px; border-radius:9px;
+    background:linear-gradient(160deg, var(--gold), var(--gold-dim));
+    display:flex; align-items:center; justify-content:center;
+    color:#1B140A; font-weight:800; font-size:18px; font-family:'Cairo';
+    flex-shrink:0;
+  }
+  .login-logo .name{ font-size:20px; font-weight:800; }
+  .login-sub{ color:var(--text-muted); font-size:14px; margin-bottom:28px; }
+  .field-label{ font-size:13px; color:var(--text-muted); margin-bottom:6px; display:block; }
+  .field{ margin-bottom:16px; }
+  input[type=text]{
+    width:100%; background:var(--surface-2); border:1px solid var(--border);
+    color:var(--text); padding:12px 14px; border-radius:9px; font-size:15px;
+    font-family:'Tajawal'; outline:none;
+  }
+  input[type=text]:focus{ border-color:var(--gold-dim); }
+  .role-toggle{ display:flex; gap:8px; }
+  .role-btn{
+    flex:1; padding:12px; border-radius:9px; border:1px solid var(--border);
+    background:var(--surface-2); color:var(--text-muted); font-family:'Tajawal';
+    font-size:14px; cursor:pointer; text-align:center;
+  }
+  .role-btn.active{ border-color:var(--gold); color:var(--gold); background:rgba(227,168,87,0.08); }
+  .btn-primary{
+    width:100%; padding:13px; border-radius:9px; border:none;
+    background:var(--gold); color:#1B140A; font-weight:700; font-size:15px;
+    font-family:'Tajawal'; cursor:pointer; margin-top:8px;
+  }
+  .btn-primary:hover{ background:#EDBB70; }
+  .existing-users{ margin-top:22px; padding-top:20px; border-top:1px solid var(--border); }
+  .existing-users .field-label{ margin-bottom:10px; }
+  .user-chip{
+    display:flex; align-items:center; gap:10px; padding:10px 12px;
+    background:var(--surface-2); border:1px solid var(--border); border-radius:9px;
+    margin-bottom:8px; cursor:pointer;
+  }
+  .user-chip:hover{ border-color:var(--gold-dim); }
+  .user-chip .avatar{
+    width:30px; height:30px; border-radius:50%; background:var(--surface-3);
+    display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700;
+    color:var(--gold); flex-shrink:0;
+  }
+  .user-chip .info{ flex:1; }
+  .user-chip .uname{ font-size:14px; font-weight:500; }
+  .user-chip .urole{ font-size:12px; color:var(--text-muted); }
+
+  /* ---------- APP SHELL ---------- */
+  #appScreen{ display:none; min-height:100vh; }
+  .shell{ display:flex; min-height:100vh; }
+  .sidebar{
+    width:230px; flex-shrink:0; background:var(--surface);
+    border-left:1px solid var(--border);
+    display:flex; flex-direction:column; padding:20px 14px;
+  }
+  .sidebar .brand{ display:flex; align-items:center; gap:10px; padding:0 6px 24px; }
+  .sidebar .brand .mark{
+    width:32px; height:32px; border-radius:8px;
+    background:linear-gradient(160deg, var(--gold), var(--gold-dim));
+    display:flex; align-items:center; justify-content:center;
+    color:#1B140A; font-weight:800; font-size:15px; flex-shrink:0;
+  }
+  .sidebar .brand .name{ font-size:16px; font-weight:800; }
+  .nav-item{
+    display:flex; align-items:center; gap:10px; padding:11px 12px;
+    border-radius:9px; cursor:pointer; color:var(--text-muted);
+    font-size:14px; margin-bottom:4px; border-right:2px solid transparent;
+    transition:background .12s;
+  }
+  .nav-item svg{ width:18px; height:18px; flex-shrink:0; }
+  .nav-item:hover{ background:var(--surface-2); color:var(--text); }
+  .nav-item.active{ background:rgba(227,168,87,0.09); color:var(--gold); border-color:var(--gold); }
+  .nav-spacer{ flex:1; }
+  .sidebar-user{
+    display:flex; align-items:center; gap:10px; padding:10px 12px;
+    border-top:1px solid var(--border); margin-top:10px; padding-top:16px;
+  }
+  .sidebar-user .avatar{
+    width:32px; height:32px; border-radius:50%; background:var(--surface-3);
+    display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700;
+    color:var(--gold); flex-shrink:0;
+  }
+  .sidebar-user .uname{ font-size:13.5px; font-weight:500; }
+  .sidebar-user .urole{ font-size:11.5px; color:var(--text-muted); }
+  .logout-btn{
+    margin-right:auto; cursor:pointer; color:var(--text-faint); font-size:12px;
+    background:none; border:none; font-family:'Tajawal';
+  }
+  .logout-btn:hover{ color:var(--danger); }
+
+  .main{ flex:1; min-width:0; display:flex; flex-direction:column; }
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 28px; border-bottom:1px solid var(--border);
+  }
+  .topbar h1{ font-size:19px; font-weight:700; }
+  .bell-wrap{ position:relative; }
+  .bell-btn{
+    width:38px; height:38px; border-radius:9px; background:var(--surface-2);
+    border:1px solid var(--border); cursor:pointer; display:flex; align-items:center; justify-content:center;
+    position:relative;
+  }
+  .bell-btn svg{ width:18px; height:18px; color:var(--text-muted); }
+  .bell-dot{
+    position:absolute; top:6px; left:6px; width:8px; height:8px; border-radius:50%;
+    background:var(--danger); display:none;
+  }
+  .notif-panel{
+    position:absolute; top:46px; left:0; width:320px; max-height:360px; overflow-y:auto;
+    background:var(--surface-2); border:1px solid var(--border); border-radius:11px;
+    padding:8px; display:none; z-index:20;
+  }
+  .notif-panel.open{ display:block; }
+  .notif-item{ padding:10px 12px; border-radius:8px; font-size:13px; }
+  .notif-item + .notif-item{ margin-top:2px; }
+  .notif-item .t{ font-weight:500; margin-bottom:2px; }
+  .notif-item .d{ color:var(--text-muted); font-size:12px; }
+  .notif-empty{ padding:20px 12px; text-align:center; color:var(--text-muted); font-size:13px; }
+
+  .content{ flex:1; padding:24px 28px; overflow-y:auto; }
+  .view{ display:none; }
+  .view.active{ display:block; }
+
+  /* task cards */
+  .col-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .col-header h2{ font-size:15px; font-weight:700; }
+  .count-pill{
+    font-size:11.5px; background:var(--surface-2); color:var(--text-muted);
+    padding:2px 9px; border-radius:20px; margin-right:8px;
+  }
+  .board{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .lane{ background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; min-height:120px; }
+  .lane-title{ font-size:13px; color:var(--text-muted); margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+  .dot{ width:7px; height:7px; border-radius:50%; }
+  .dot.pending{ background:var(--text-faint); }
+  .dot.progress{ background:var(--warn); }
+  .dot.done{ background:var(--success); }
+  .task-card{
+    background:var(--surface-2); border:1px solid var(--border); border-radius:10px;
+    padding:12px 13px; margin-bottom:10px; cursor:pointer;
+  }
+  .task-card:hover{ border-color:var(--gold-dim); }
+  .task-card .tt{ font-size:14px; font-weight:500; margin-bottom:5px; }
+  .task-card .td{ font-size:12px; color:var(--text-muted); margin-bottom:8px; line-height:1.5; }
+  .task-meta{ display:flex; align-items:center; justify-content:space-between; }
+  .due-tag{ font-size:11px; padding:2px 8px; border-radius:20px; background:var(--surface-3); color:var(--text-muted); }
+  .due-tag.overdue{ background:var(--danger-bg); color:var(--danger); }
+  .due-tag.soon{ background:rgba(227,168,87,0.12); color:var(--gold); }
+  .status-select{
+    font-size:11.5px; background:var(--surface-3); color:var(--text); border:1px solid var(--border);
+    border-radius:7px; padding:4px 6px; font-family:'Tajawal';
+  }
+  .empty-lane{ font-size:12.5px; color:var(--text-faint); text-align:center; padding:20px 0; }
+
+  /* assign form */
+  .assign-grid{ display:grid; grid-template-columns:1.1fr 1fr; gap:20px; align-items:start; }
+  .card-panel{ background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px; }
+  .card-panel h3{ font-size:14.5px; margin-bottom:16px; }
+  .field select, .field textarea{
+    width:100%; background:var(--surface-2); border:1px solid var(--border);
+    color:var(--text); padding:11px 13px; border-radius:9px; font-size:14px;
+    font-family:'Tajawal'; outline:none; resize:vertical;
+  }
+  .field select:focus, .field textarea:focus, input[type=date]:focus{ border-color:var(--gold-dim); }
+  input[type=date]{
+    width:100%; background:var(--surface-2); border:1px solid var(--border);
+    color:var(--text); padding:10.5px 13px; border-radius:9px; font-size:14px;
+    font-family:'Tajawal'; outline:none; color-scheme:dark;
+  }
+  .assign-list-item{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:11px 12px; border:1px solid var(--border); border-radius:9px; margin-bottom:8px; font-size:13px;
+  }
+  .assign-list-item .who{ color:var(--text-muted); font-size:12px; }
+  .small-status{ font-size:11px; padding:2px 8px; border-radius:20px; }
+  .small-status.pending{ background:var(--surface-3); color:var(--text-muted); }
+  .small-status.progress{ background:rgba(227,168,87,0.12); color:var(--gold); }
+  .small-status.done{ background:var(--success-bg); color:var(--success); }
+
+  /* chat */
+  .chat-wrap{ display:flex; height:calc(100vh - 140px); border:1px solid var(--border); border-radius:14px; overflow:hidden; background:var(--surface); }
+  .chat-messages{ flex:1; padding:20px 22px; overflow-y:auto; display:flex; flex-direction:column; gap:14px; }
+  .msg{ max-width:60%; }
+  .msg.mine{ align-self:flex-start; }
+  .msg .bubble{
+    background:var(--surface-2); border:1px solid var(--border); border-radius:12px;
+    padding:10px 14px; font-size:14px; line-height:1.6;
+  }
+  .msg.mine .bubble{ background:rgba(227,168,87,0.1); border-color:var(--gold-dim); }
+  .msg .meta{ font-size:11px; color:var(--text-faint); margin-top:4px; padding:0 4px; }
+  .chat-input-bar{ display:flex; gap:10px; padding:14px 16px; border-top:1px solid var(--border); }
+  .chat-input-bar input{ flex:1; }
+  .send-btn{
+    padding:0 20px; border-radius:9px; border:none; background:var(--gold); color:#1B140A;
+    font-weight:700; cursor:pointer; font-family:'Tajawal'; font-size:14px;
+  }
+
+  /* dashboard */
+  .stat-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:22px; }
+  .stat-card{ background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:18px; }
+  .stat-card .lbl{ font-size:12.5px; color:var(--text-muted); margin-bottom:8px; }
+  .stat-card .val{ font-size:26px; font-weight:800; font-family:'Cairo'; }
+  .stat-card .val.gold{ color:var(--gold); }
+  .emp-progress-row{ display:flex; align-items:center; gap:14px; padding:14px 0; border-bottom:1px solid var(--border); }
+  .emp-progress-row:last-child{ border-bottom:none; }
+  .emp-progress-row .avatar{
+    width:34px; height:34px; border-radius:50%; background:var(--surface-3);
+    display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:var(--gold);
+    flex-shrink:0;
+  }
+  .emp-progress-row .name{ font-size:14px; font-weight:500; width:110px; flex-shrink:0; }
+  .bar-track{ flex:1; height:8px; background:var(--surface-2); border-radius:20px; overflow:hidden; }
+  .bar-fill{ height:100%; background:linear-gradient(90deg, var(--gold-dim), var(--gold)); border-radius:20px; }
+  .emp-progress-row .pct{ font-size:13px; color:var(--text-muted); width:42px; text-align:left; flex-shrink:0; }
+
+  @media(max-width:860px){
+    .board{ grid-template-columns:1fr; }
+    .assign-grid{ grid-template-columns:1fr; }
+    .stat-row{ grid-template-columns:repeat(2,1fr); }
+    .sidebar{ width:76px; }
+    .sidebar .brand .name, .nav-item span, .sidebar-user .info{ display:none; }
+    .nav-item{ justify-content:center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== LOGIN ===================== -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="mark">ف</div>
+      <div class="name">مساحة الفريق</div>
+    </div>
+    <div class="login-sub">سجّل دخولك عشان تبدأ تدير مهامك مع الفريق.</div>
+
+    <div class="field">
+      <label class="field-label">الاسم</label>
+      <input type="text" id="loginName" placeholder="اكتب اسمك هنا">
+    </div>
+    <div class="field">
+      <label class="field-label">دورك</label>
+      <div class="role-toggle">
+        <div class="role-btn active" data-role="employee" onclick="selectRole(this)">موظف</div>
+        <div class="role-btn" data-role="manager" onclick="selectRole(this)">مدير</div>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="loginNewUser()">دخول</button>
+
+    <div class="existing-users" id="existingUsersWrap" style="display:none;">
+      <label class="field-label">أو اختار حسابك</label>
+      <div id="existingUsersList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== APP ===================== -->
+<div id="appScreen">
+<div class="shell">
+  <div class="sidebar">
+    <div class="brand"><div class="mark">ف</div><div class="name">مساحة الفريق</div></div>
+
+    <div class="nav-item active" data-view="todo" onclick="switchView('todo')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      <span>مهامي</span>
+    </div>
+    <div class="nav-item" id="navAssign" data-view="assign" onclick="switchView('assign')" style="display:none;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      <span>إسناد المهام</span>
+    </div>
+    <div class="nav-item" data-view="chat" onclick="switchView('chat')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+      <span>الدردشة</span>
+    </div>
+    <div class="nav-item" id="navDash" data-view="dash" onclick="switchView('dash')" style="display:none;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg>
+      <span>لوحة التحكم</span>
+    </div>
+
+    <div class="nav-spacer"></div>
+    <div class="sidebar-user">
+      <div class="avatar" id="sideAvatar">--</div>
+      <div class="info" style="flex:1;">
+        <div class="uname" id="sideName">--</div>
+        <div class="urole" id="sideRole">--</div>
+      </div>
+      <button class="logout-btn" onclick="logout()">خروج</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <h1 id="viewTitle">مهامي</h1>
+      <div class="bell-wrap">
+        <button class="bell-btn" onclick="toggleNotif()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <span class="bell-dot" id="bellDot"></span>
+        </button>
+        <div class="notif-panel" id="notifPanel"></div>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- TODO VIEW -->
+      <div class="view active" id="view-todo">
+        <div class="board" id="todoBoard"></div>
+      </div>
+
+      <!-- ASSIGN VIEW -->
+      <div class="view" id="view-assign">
+        <div class="assign-grid">
+          <div class="card-panel">
+            <h3>مهمة جديدة</h3>
+            <div class="field">
+              <label class="field-label">عنوان المهمة</label>
+              <input type="text" id="taskTitle" placeholder="مثال: تجهيز تقرير المبيعات">
+            </div>
+            <div class="field">
+              <label class="field-label">التفاصيل</label>
+              <textarea id="taskDesc" rows="3" placeholder="اكتب تفاصيل المهمة هنا"></textarea>
+            </div>
+            <div class="field">
+              <label class="field-label">إسناد إلى</label>
+              <select id="taskAssignee"></select>
+            </div>
+            <div class="field">
+              <label class="field-label">تاريخ التسليم</label>
+              <input type="date" id="taskDue">
+            </div>
+            <button class="btn-primary" onclick="createTask()">إسناد المهمة</button>
+          </div>
+          <div class="card-panel">
+            <h3>آخر المهام المُسندة</h3>
+            <div id="assignedList"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHAT VIEW -->
+      <div class="view" id="view-chat">
+        <div class="chat-wrap">
+          <div class="chat-messages" id="chatMessages"></div>
+          <div class="chat-input-bar">
+            <input type="text" id="chatInput" placeholder="اكتب رسالتك..." onkeydown="if(event.key==='Enter')sendChat()">
+            <button class="send-btn" onclick="sendChat()">إرسال</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- DASHBOARD VIEW -->
+      <div class="view" id="view-dash">
+        <div class="stat-row" id="statRow"></div>
+        <div class="card-panel">
+          <h3>نسبة الإنجاز لكل موظف</h3>
+          <div id="empProgressList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+let currentUser = null;
+let selectedRole = 'employee';
+let pollTimer = null;
+
+function selectRole(el){
+  document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  selectedRole = el.dataset.role;
+}
+
+function initials(name){
+  const parts = name.trim().split(' ').filter(Boolean);
+  return (parts[0] ? parts[0][0] : '') + (parts[1] ? parts[1][0] : '');
+}
+
+async function loadEmployees(){
+  try{
+    const r = await window.storage.get('team_employees', true);
+    return r ? JSON.parse(r.value) : [];
+  }catch(e){ return []; }
+}
+async function saveEmployees(list){
+  await window.storage.set('team_employees', JSON.stringify(list), true);
+}
+async function loadTasks(){
+  try{
+    const r = await window.storage.get('team_tasks', true);
+    return r ? JSON.parse(r.value) : [];
+  }catch(e){ return []; }
+}
+async function saveTasks(list){
+  await window.storage.set('team_tasks', JSON.stringify(list), true);
+}
+async function loadChat(){
+  try{
+    const r = await window.storage.get('team_chat', true);
+    return r ? JSON.parse(r.value) : [];
+  }catch(e){ return []; }
+}
+async function saveChat(list){
+  await window.storage.set('team_chat', JSON.stringify(list), true);
+}
+
+async function init(){
+  try{
+    const session = await window.storage.get('team_session', false);
+    if(session && session.value){
+      const u = JSON.parse(session.value);
+      const employees = await loadEmployees();
+      const found = employees.find(e=>e.id===u.id);
+      if(found){ enterApp(found); return; }
+    }
+  }catch(e){}
+  await renderExistingUsers();
+}
+
+async function renderExistingUsers(){
+  const employees = await loadEmployees();
+  const wrap = document.getElementById('existingUsersWrap');
+  const list = document.getElementById('existingUsersList');
+  if(employees.length===0){ wrap.style.display='none'; return; }
+  wrap.style.display='block';
+  list.innerHTML = employees.map(e=>`
+    <div class="user-chip" onclick='loginExisting(${JSON.stringify(e.id)})'>
+      <div class="avatar">${initials(e.name)}</div>
+      <div class="info">
+        <div class="uname">${e.name}</div>
+        <div class="urole">${e.role==='manager'?'مدير':'موظف'}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function loginExisting(id){
+  const employees = await loadEmployees();
+  const u = employees.find(e=>e.id===id);
+  if(u) enterApp(u);
+}
+
+async function loginNewUser(){
+  const nameInput = document.getElementById('loginName');
+  const name = nameInput.value.trim();
+  if(!name){ nameInput.focus(); return; }
+  const employees = await loadEmployees();
+  let existing = employees.find(e=>e.name===name);
+  if(existing){ enterApp(existing); return; }
+  const newUser = { id: 'u_'+Date.now(), name, role: selectedRole };
+  employees.push(newUser);
+  await saveEmployees(employees);
+  enterApp(newUser);
+}
+
+async function enterApp(user){
+  currentUser = user;
+  await window.storage.set('team_session', JSON.stringify({id:user.id}), false);
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display = 'block';
+  document.getElementById('sideAvatar').textContent = initials(user.name);
+  document.getElementById('sideName').textContent = user.name;
+  document.getElementById('sideRole').textContent = user.role==='manager' ? 'مدير' : 'موظف';
+  if(user.role==='manager'){
+    document.getElementById('navAssign').style.display='flex';
+    document.getElementById('navDash').style.display='flex';
+  }
+  await renderAll();
+  if(pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(renderAll, 8000);
+}
+
+async function logout(){
+  await window.storage.delete('team_session', false).catch(()=>{});
+  location.reload();
+}
+
+function switchView(view){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.view===view));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+view).classList.add('active');
+  const titles = { todo:'مهامي', assign:'إسناد المهام', chat:'الدردشة', dash:'لوحة التحكم' };
+  document.getElementById('viewTitle').textContent = titles[view];
+  renderAll();
+}
+
+function daysUntil(dateStr){
+  if(!dateStr) return null;
+  const due = new Date(dateStr+'T23:59:59');
+  const now = new Date();
+  return Math.ceil((due-now)/(1000*60*60*24));
+}
+
+function dueTag(dateStr){
+  if(!dateStr) return '';
+  const d = daysUntil(dateStr);
+  const label = new Date(dateStr).toLocaleDateString('ar-EG', {day:'numeric', month:'short'});
+  if(d<0) return `<span class="due-tag overdue">متأخرة - ${label}</span>`;
+  if(d<=1) return `<span class="due-tag soon">مستحقة - ${label}</span>`;
+  return `<span class="due-tag">${label}</span>`;
+}
+
+async function renderAll(){
+  if(!currentUser) return;
+  const [employees, tasks, chat] = await Promise.all([loadEmployees(), loadTasks(), loadChat()]);
+  renderTodo(tasks);
+  renderNotif(tasks);
+  if(currentUser.role==='manager'){
+    renderAssignPanel(employees, tasks);
+    renderDashboard(employees, tasks);
+  }
+  renderChat(chat, employees);
+}
+
+function renderTodo(tasks){
+  const mine = tasks.filter(t=>t.assignedTo===currentUser.id);
+  const lanes = [
+    {key:'pending', label:'قيد الانتظار', dot:'pending'},
+    {key:'progress', label:'جاري التنفيذ', dot:'progress'},
+    {key:'done', label:'مكتملة', dot:'done'}
+  ];
+  const board = document.getElementById('todoBoard');
+  board.innerHTML = lanes.map(l=>{
+    const items = mine.filter(t=>t.status===l.key);
+    return `<div class="lane">
+      <div class="lane-title"><span class="dot ${l.dot}"></span> ${l.label} <span class="count-pill">${items.length}</span></div>
+      ${items.length===0 ? '<div class="empty-lane">لا توجد مهام</div>' : items.map(t=>`
+        <div class="task-card">
+          <div class="tt">${escapeHtml(t.title)}</div>
+          ${t.desc ? `<div class="td">${escapeHtml(t.desc)}</div>` : ''}
+          <div class="task-meta">
+            ${dueTag(t.dueDate)}
+            <select class="status-select" onchange="updateStatus('${t.id}', this.value)">
+              <option value="pending" ${t.status==='pending'?'selected':''}>قيد الانتظار</option>
+              <option value="progress" ${t.status==='progress'?'selected':''}>جاري التنفيذ</option>
+              <option value="done" ${t.status==='done'?'selected':''}>مكتملة</option>
+            </select>
+          </div>
+        </div>
+      `).join('')}
+    </div>`;
+  }).join('');
+}
+
+async function updateStatus(taskId, status){
+  const tasks = await loadTasks();
+  const t = tasks.find(x=>x.id===taskId);
+  if(t){ t.status = status; await saveTasks(tasks); renderAll(); }
+}
+
+async function renderAssignPanel(employees, tasks){
+  const sel = document.getElementById('taskAssignee');
+  const others = employees.filter(e=>e.id!==currentUser.id);
+  sel.innerHTML = others.length
+    ? others.map(e=>`<option value="${e.id}">${e.name} (${e.role==='manager'?'مدير':'موظف'})</option>`).join('')
+    : `<option value="">لا يوجد موظفين بعد</option>`;
+
+  const mine = tasks.filter(t=>t.assignedBy===currentUser.id).sort((a,b)=>b.createdAt-a.createdAt).slice(0,12);
+  const list = document.getElementById('assignedList');
+  const statusLabel = {pending:'قيد الانتظار', progress:'جاري التنفيذ', done:'مكتملة'};
+  list.innerHTML = mine.length===0 ? '<div class="empty-lane">لسه ماسندتش أي مهمة</div>' : mine.map(t=>{
+    const emp = employees.find(e=>e.id===t.assignedTo);
+    return `<div class="assign-list-item">
+      <div>
+        <div>${escapeHtml(t.title)}</div>
+        <div class="who">إلى ${emp ? emp.name : 'موظف محذوف'}</div>
+      </div>
+      <span class="small-status ${t.status}">${statusLabel[t.status]}</span>
+    </div>`;
+  }).join('');
+}
+
+async function createTask(){
+  const title = document.getElementById('taskTitle').value.trim();
+  const desc = document.getElementById('taskDesc').value.trim();
+  const assignee = document.getElementById('taskAssignee').value;
+  const due = document.getElementById('taskDue').value;
+  if(!title || !assignee) return;
+  const tasks = await loadTasks();
+  tasks.push({
+    id:'t_'+Date.now(),
+    title, desc,
+    assignedTo:assignee,
+    assignedBy:currentUser.id,
+    dueDate: due || null,
+    status:'pending',
+    createdAt:Date.now()
+  });
+  await saveTasks(tasks);
+  document.getElementById('taskTitle').value='';
+  document.getElementById('taskDesc').value='';
+  document.getElementById('taskDue').value='';
+  renderAll();
+}
+
+function renderDashboard(employees, tasks){
+  const total = tasks.length;
+  const done = tasks.filter(t=>t.status==='done').length;
+  const overdue = tasks.filter(t=>t.dueDate && daysUntil(t.dueDate)<0 && t.status!=='done').length;
+  const overallPct = total ? Math.round(done/total*100) : 0;
+
+  document.getElementById('statRow').innerHTML = `
+    <div class="stat-card"><div class="lbl">إجمالي المهام</div><div class="val">${total}</div></div>
+    <div class="stat-card"><div class="lbl">المهام المكتملة</div><div class="val">${done}</div></div>
+    <div class="stat-card"><div class="lbl">المهام المتأخرة</div><div class="val" style="color:var(--danger)">${overdue}</div></div>
+    <div class="stat-card"><div class="lbl">نسبة الإنجاز العامة</div><div class="val gold">${overallPct}%</div></div>
+  `;
+
+  const list = document.getElementById('empProgressList');
+  if(employees.length===0){
+    list.innerHTML = '<div class="empty-lane">لا يوجد موظفين بعد</div>';
+    return;
+  }
+  list.innerHTML = employees.map(e=>{
+    const empTasks = tasks.filter(t=>t.assignedTo===e.id);
+    const empDone = empTasks.filter(t=>t.status==='done').length;
+    const pct = empTasks.length ? Math.round(empDone/empTasks.length*100) : 0;
+    return `<div class="emp-progress-row">
+      <div class="avatar">${initials(e.name)}</div>
+      <div class="name">${escapeHtml(e.name)}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+      <div class="pct">${pct}%</div>
+    </div>`;
+  }).join('');
+}
+
+function renderChat(chat, employees){
+  const box = document.getElementById('chatMessages');
+  const wasAtBottom = box.scrollTop + box.clientHeight >= box.scrollHeight - 40;
+  box.innerHTML = chat.map(m=>{
+    const mine = m.fromId===currentUser.id;
+    const time = new Date(m.ts).toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
+    return `<div class="msg ${mine?'mine':''}">
+      <div class="bubble">${escapeHtml(m.text)}</div>
+      <div class="meta">${mine?'':escapeHtml(m.fromName)+' · '}${time}</div>
+    </div>`;
+  }).join('');
+  if(wasAtBottom || chat.length<=1) box.scrollTop = box.scrollHeight;
+}
+
+async function sendChat(){
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if(!text) return;
+  const chat = await loadChat();
+  chat.push({ id:'m_'+Date.now(), fromId:currentUser.id, fromName:currentUser.name, text, ts:Date.now() });
+  await saveChat(chat);
+  input.value='';
+  renderAll();
+}
+
+function renderNotif(tasks){
+  const mine = tasks.filter(t=>t.assignedTo===currentUser.id && t.status!=='done' && t.dueDate);
+  const alerts = mine.filter(t=>daysUntil(t.dueDate) <= 1);
+  const dot = document.getElementById('bellDot');
+  dot.style.display = alerts.length ? 'block' : 'none';
+  const panel = document.getElementById('notifPanel');
+  panel.innerHTML = alerts.length===0
+    ? '<div class="notif-empty">لا توجد إشعارات جديدة</div>'
+    : alerts.sort((a,b)=>daysUntil(a.dueDate)-daysUntil(b.dueDate)).map(t=>{
+      const d = daysUntil(t.dueDate);
+      const msg = d<0 ? `متأخرة منذ ${Math.abs(d)} يوم` : d===0 ? 'مستحقة اليوم' : 'مستحقة غدًا';
+      return `<div class="notif-item"><div class="t">${escapeHtml(t.title)}</div><div class="d">${msg}</div></div>`;
+    }).join('');
+}
+
+function toggleNotif(){
+  document.getElementById('notifPanel').classList.toggle('open');
+}
+document.addEventListener('click', (e)=>{
+  if(!e.target.closest('.bell-wrap')) document.getElementById('notifPanel').classList.remove('open');
+});
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+init();
+</script>
+</body>
+</html>
